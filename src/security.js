@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { config } from './config.js';
 
 /** Script inline mínimo para aplicar o tema salvo antes da pintura (evita "flash"). */
 export const THEME_SCRIPT = "document.documentElement.className+=' js';try{var t=localStorage.getItem('gw-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}";
@@ -33,7 +34,7 @@ export function setPageHeaders(res, kind, { ga4 = '', plausible = '' } = {}) {
       `script-src 'self' ${THEME_HASH} blob: 'wasm-unsafe-eval' 'unsafe-eval'`,
       "style-src 'self' blob:", "style-src-attr 'unsafe-inline'",
       "img-src 'self' data: blob:", "font-src 'self' data:",
-      "connect-src 'self' blob: data:", "media-src 'self' blob: data:",
+      `connect-src 'self' blob: data: ${config.romHosts.join(' ')}`.trim(), "media-src 'self' blob: data:",
       "worker-src 'self' blob:", "frame-src 'self' https:", "child-src 'self' blob: https:",
       "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'", "manifest-src 'self'",
     ].join('; ');

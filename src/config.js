@@ -28,6 +28,8 @@ export const config = {
   dataDir: process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : process.env.VERCEL ? '/tmp/gameweb-data' : join(ROOT, 'data'),
   publicDir: join(ROOT, 'public'),
   uploadDir: process.env.VERCEL ? '/tmp/gameweb-uploads' : join(ROOT, 'public', 'uploads'),
+  // Hosts externos de ROM liberados no player (CSP connect-src), separados por espaço. Ex.: "https://*.gofile.io"
+  romHosts: (process.env.ROM_HOSTS || '').split(/[\s,]+/).filter((h) => /^https:\/\/[\w*.-]+(:\d+)?$/.test(h)),
   maxRomMb: int(process.env.MAX_ROM_MB, 700),
   maxImageMb: 8,
   sessionHours: int(process.env.SESSION_HOURS, 8),
