@@ -53,17 +53,27 @@ app.use((err, req, res, next) => {
   res.status(status).type('text/plain').send(status === 400 ? 'Requisição inválida.' : status === 413 ? 'Conteúdo grande demais.' : 'Erro interno do servidor.');
 });
 
-const server = app.listen(config.port, config.host, () => {
-  console.log(`\n  GameWeb no ar: http://localhost:${config.port}`);
-  console.log(`  Painel admin : http://localhost:${config.port}/admin`);
-  if (init.createdAdmin) console.log(`\n  Primeiro acesso: usuário e senha iniciais em\n  ${init.createdAdmin}\n`);
-});
+// Na Vercel o app roda como função (sem listen); fora dela, servidor normal.
+if (!process.env.VERCEL) {
+  const server = app.listen(config.port, config.host, () => {
+    console.log(`
+  GameWeb no ar: http://localhost:${config.port}`);
+    console.log(`  Painel admin : http://localhost:${config.port}/admin`);
+    if (init.createdAdmin) console.log(`
+  Primeiro acesso: usuário e senha iniciais em
+  ${init.createdAdmin}
+`);
+  });
 
-async function shutdown(signal) {
-  console.log(`\n${signal}: salvando dados e encerrando…`);
-  server.close();
-  await flushAll();
-  process.exit(0);
+  async function shutdown(signal) {
+    console.log(`
+${signal}: salvando dados e encerrando…`);
+    server.close();
+    await flushAll();
+    process.exit(0);
+  }
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+export default app;

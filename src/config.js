@@ -24,9 +24,10 @@ export const config = {
   // Atrás de proxy/CDN (Cloudflare, Nginx...) use TRUST_PROXY=1
   trustProxy: process.env.TRUST_PROXY ? (/^\d+$/.test(process.env.TRUST_PROXY) ? Number(process.env.TRUST_PROXY) : process.env.TRUST_PROXY) : false,
   cookieSecure: process.env.COOKIE_SECURE === '1',
-  dataDir: process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : join(ROOT, 'data'),
+  // Vercel: disco só-leitura, exceto /tmp (temporário, some a cada reinício)
+  dataDir: process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : process.env.VERCEL ? '/tmp/gameweb-data' : join(ROOT, 'data'),
   publicDir: join(ROOT, 'public'),
-  uploadDir: join(ROOT, 'public', 'uploads'),
+  uploadDir: process.env.VERCEL ? '/tmp/gameweb-uploads' : join(ROOT, 'public', 'uploads'),
   maxRomMb: int(process.env.MAX_ROM_MB, 700),
   maxImageMb: 8,
   sessionHours: int(process.env.SESSION_HOURS, 8),
