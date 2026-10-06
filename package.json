@@ -1,0 +1,36 @@
+{
+  "name": "gameweb",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GameWeb - emulador online (PS2, PSP e clássicos) com painel administrativo",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "setup": "node scripts/fetch-emulators.js && node scripts/fetch-roms.js",
+    "emu:fetch": "node scripts/fetch-emulators.js",
+    "roms:fetch": "node scripts/fetch-roms.js",
+    "og": "node scripts/make-og.js",
+    "test": "node --test tests/*.test.js",
+    "qa:site": "node scripts/qa/site.mjs",
+    "qa:player": "node scripts/qa/player.mjs",
+    "qa:admin": "node scripts/qa/admin.mjs",
+    "qa:webgame": "node scripts/qa/webgame.mjs",
+    "qa:mobile": "node scripts/qa/mobile-player.mjs",
+    "qa:sw": "node scripts/qa/sw.mjs",
+    "qa:vitrine": "node scripts/qa/showcase.mjs"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "compression": "^1.8.2",
+    "express": "^5.2.1",
+    "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "puppeteer-core": "^25.12.0"
+  }
+}

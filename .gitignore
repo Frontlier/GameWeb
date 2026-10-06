@@ -1,0 +1,23 @@
+# dependências e dados locais
+node_modules/
+data/
+public/uploads/
+.env
+qa-output/
+*.log
+
+# emuladores baixados por "npm run emu:fetch" (regeneráveis)
+public/emu/ejs/
+public/emu/MANIFEST.json
+public/emu/play/Play.js
+public/emu/play/Play.wasm
+public/emu/play/index.html
+public/emu/play/index.original.html
+public/emu/play/static/
+public/emu/play/favicon.ico
+public/emu/play/manifest.json
+
+# jogos e capas baixados por "npm run roms:fetch" (regeneráveis)
+public/roms/
+public/covers/*
+!public/covers/mini-futebol.png
