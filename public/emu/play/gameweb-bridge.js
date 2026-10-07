@@ -62,5 +62,18 @@
     if (e.target && e.target.type === 'file') { e.target.blur(); canvas.focus(); window.parent?.postMessage({ type: 'gw-ps2-file', name: e.target.files?.[0]?.name || '' }, '*'); }
   });
   window.addEventListener('blur', () => { for (const n of [...held]) { held.delete(n); fire(n, 'keyup'); } });
+
+  // proporção da imagem: ajustar (4:3) ou preencher (estica até as bordas); lembra a escolha
+  const stage = canvas.parentElement;
+  stage.classList.add('gw-stage');
+  const KEY = 'gw-ps2-aspect';
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'gw-aspect';
+  const apply = (stretch) => { document.documentElement.classList.toggle('gw-stretch', stretch); btn.textContent = stretch ? 'Tela: preencher' : 'Tela: ajustar (4:3)'; btn.setAttribute('aria-pressed', String(stretch)); };
+  let stretch = false;
+  try { stretch = localStorage.getItem(KEY) === 'fill'; } catch { /* sem armazenamento */ }
+  apply(stretch);
+  btn.addEventListener('click', () => { stretch = !stretch; apply(stretch); try { localStorage.setItem(KEY, stretch ? 'fill' : 'fit'); } catch { /* ok */ } canvas.focus(); });
+  stage.append(btn);
   window.parent?.postMessage({ type: 'gw-ps2-ready' }, '*');
 })();

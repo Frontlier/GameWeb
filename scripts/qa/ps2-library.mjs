@@ -61,10 +61,16 @@ const info = frame && await frame.evaluate(() => ({
   coi: self.crossOriginIsolated,
   text: document.body.innerText.slice(0, 300),
   canvas: (() => { const c = document.getElementById('outputCanvas'); return c ? [c.width, c.height] : null; })(),
+  box: (() => { const r = document.getElementById('outputCanvas').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })(),
+  gl: (() => { const g = document.getElementById('outputCanvas').getContext('webgl2'); return g && g.getContextAttributes().powerPreference; })(),
 })).catch((e) => ({ erro: e.message }));
 console.log('play!:', JSON.stringify(info));
 console.log('erros:', errors.slice(0, 12));
-await sleep(30000);
-await shot(page, 'ps2lib-3-later');
+await frame.click('.gw-aspect', { delay: 50 }).catch(() => {});
+await sleep(1500);
+await shot(page, 'ps2lib-3-fill');
+console.log('preencher:', JSON.stringify(await frame.evaluate(() => { const r = document.getElementById('outputCanvas').getBoundingClientRect(); return { box: [Math.round(r.width), Math.round(r.height)], btn: document.querySelector('.gw-aspect')?.textContent }; })));
+await sleep(20000);
+await shot(page, 'ps2lib-4-later');
 await browser.close();
 cleanup();

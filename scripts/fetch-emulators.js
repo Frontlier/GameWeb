@@ -102,7 +102,7 @@ async function fetchPlay() {
   // versão ajustada: caminhos relativos + estilo/ponte de controle do GameWeb
   let html = original
     .replace(/(src|href)="\/(?!\/)/g, '$1="')
-    .replace('<head>', '<head><base href="/emu/play/"/>')
+    .replace('<head>', '<head><base href="/emu/play/"/><script src="gameweb-gpu.js"></script>')
     .replace('</head>', '<link rel="stylesheet" href="gameweb-play.css"><script defer src="gameweb-bridge.js"></script></head>')
     .replace('<html lang="en">', '<html lang="pt-BR" class="gw-embed">');
   writeFileSync(join(PLAY_DIR, 'index.html'), html);
