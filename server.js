@@ -30,7 +30,7 @@ app.use(express.static(config.publicDir, {
     }
     if (url.startsWith('/roms/') || url.startsWith('/uploads/')) res.set('Cross-Origin-Resource-Policy', 'same-origin');
     if (url.startsWith('/web/')) res.set('X-Robots-Tag', 'noindex'); // jogos HTML5 soltos não devem ser indexados; a página do jogo é a /jogos/:slug
-    if (url === '/sw.js') res.set('Cache-Control', 'no-cache');
+    if (url === '/sw.js' || /^\/emu\/play\/(gameweb-[\w.-]+|index\.html)?$/.test(url)) res.set('Cache-Control', 'no-cache');
     else if (res.req.query.v || url.startsWith('/fonts/')) res.set('Cache-Control', YEAR);
     else if (url.startsWith('/emu/')) res.set('Cache-Control', 'public, max-age=2592000');
     else res.set('Cache-Control', 'public, max-age=86400');

@@ -217,7 +217,7 @@
   function startPlay(f) {
     surface.replaceChildren();
     const frame = document.createElement('iframe');
-    frame.src = '/emu/play/';
+    frame.src = '/emu/play/?v=2'; // ?v= muda a URL do iframe e derruba o cache antigo
     frame.title = 'Emulador de PS2 (Play!)';
     frame.allow = 'gamepad; fullscreen; autoplay; cross-origin-isolated';
     frame.setAttribute('allowfullscreen', '');
