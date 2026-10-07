@@ -197,7 +197,7 @@ export function sanitizeGame(input, existing = null) {
   if (!systemById(system)) errors.system = 'Escolha um console válido.';
   else if (system === 'web' && kind !== 'web') errors.system = 'O console WEB é só para jogos HTML5. Escolha o tipo "Jogo web" ou outro console.';
   let romUrl = safeUrl(input.rom?.url);
-  if (kind === 'file' && romUrl && !/^\/(roms|uploads\/roms)\/[^/]+$/.test(romUrl) && !romUrl.startsWith('https://')) romUrl = '';
+  if (kind === 'file' && romUrl && !/^\/(roms|uploads\/roms)\/[^/]+$/.test(romUrl) && !/^\/library\/[^/].*[^/]$/.test(romUrl) &&!romUrl.startsWith('https://')) romUrl = '';
   if (kind === 'web' && romUrl && !/^\/(web|uploads\/web)\//.test(romUrl) && !romUrl.startsWith('https://')) romUrl = '';
   const rom = { kind: romUrl ? kind : 'none', url: romUrl, size: Math.max(0, Math.trunc(Number(input.rom?.size) || 0)), sha256: /^[a-f0-9]{64}$/.test(input.rom?.sha256 || '') ? input.rom.sha256 : '' };
 

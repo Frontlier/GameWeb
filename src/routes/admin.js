@@ -16,6 +16,7 @@ import {
   removeInitialCredentialsFile, removeUser, sanitizeGame, saveGame, saveSettings, setUserPassword, touchLogin,
   updateSystemOverride,
 } from '../db.js';
+import { listLibrary } from '../library.js';
 import { setPageHeaders } from '../security.js';
 import { SYSTEMS } from '../systems.js';
 import { asset } from '../views/layout.js';
@@ -191,6 +192,9 @@ export function createAdminApi() {
     await Promise.all([g.rom.url, g.cover, ...g.screenshots].map(removeUploaded));
     res.json({ ok: true });
   });
+
+  // arquivos disponíveis na pasta local de jogos (ROMS_DIR)
+  api.get('/library', async (req, res) => res.json({ ...(await listLibrary()), dir: config.romsDir ? basename(config.romsDir) : '' }));
 
   api.post('/upload/image', run(imageUpload), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });

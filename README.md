@@ -79,6 +79,16 @@ Feito: HTML renderizado no servidor (rastreável sem JavaScript), `title`/`descr
 - Para PS2/PSP/PS1 etc., o visitante usa o **próprio arquivo**, que fica só no navegador dele.
 - Atenção a **licenças dos emuladores** se for monetizar: alguns núcleos (por exemplo, Snes9x e Genesis Plus GX) têm licença não comercial. Revise a página `/legal` e os repositórios antes de colocar anúncios.
 
+## Jogos numa pasta local (ex.: Google Drive para computador)
+
+Para testar sem gastar com armazenamento, aponte `ROMS_DIR` (no `.env`) para uma pasta do computador, como a pasta sincronizada do **Google Drive para computador**:
+
+```
+ROMS_DIR=G:Meu DriveJogos
+```
+
+No painel, em **Jogos → (jogo) → Escolher da pasta de jogos**, você escolhe o arquivo (ISO, CSO, ROM…). Os arquivos **não são copiados** para o projeto: são servidos em `/library/…`, com suporte a Range, e **só se estiverem vinculados a um jogo publicado** (o resto da pasta não fica acessível). Isso vale só para o computador onde o servidor roda; para o ar, troque por R2/GoFile (o site guarda apenas o endereço do arquivo, então a troca não afeta o catálogo).
+
 ## Publicando na internet
 
 - Use **HTTPS** e defina `SITE_URL`, `TRUST_PROXY=1` (atrás de Nginx/Cloudflare) e `COOKIE_SECURE=1`.
@@ -92,7 +102,7 @@ Toda a persistência está em `src/db.js` (jogos, configurações, usuários, se
 ## Testes
 
 ```bash
-npm test             # 61 testes (unitários + integração com servidor temporário)
+npm test             # testes (unitários + integração com servidor temporário)
 npm run qa:site      # capturas desktop/celular e verificação de erros (precisa do servidor rodando)
 npm run qa:player    # player: catálogo, controle, abrir meu jogo, PS2
 npm run qa:admin     # painel ponta a ponta (sobe uma instância própria)

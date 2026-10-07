@@ -45,7 +45,7 @@
   const ico = (name) => { const s = h('span', { class: 'ico', 'aria-hidden': 'true' }); s.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>`; return s; };
   const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
   const fmtDate = (iso) => (iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
-  const fmtBytes = (n) => (!n ? '—' : n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB');
+  const fmtBytes = (n) => (!n ? '—' : n > 1073741824 ? (n / 1073741824).toFixed(2) + ' GB' : n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB');
   const slugify = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
 
   function toast(msg, kind = 'ok') {
@@ -409,7 +409,27 @@
       } catch (ex) { toast(ex.message, 'bad'); }
       progress.hidden = true; progress.firstChild.style.width = '0'; romFile.value = '';
     } });
-    const romPath = input({ id: 'romurl', placeholder: '/roms/arquivo.gba  ou  https://…', value: g.rom.url, oninput: () => { g.rom.url = romPath.value.trim(); g.rom.size = 0; g.rom.sha256 = ''; paintRom(); } });
+    // arquivos da pasta local de jogos (ROMS_DIR, ex.: pasta do Google Drive)
+    const libBox = h('div', { class: 'lib' });
+    const openLibrary = async () => {
+      libBox.replaceChildren(h('p', { class: 'muted' }, 'Lendo a pasta…'));
+      let data;
+      try { data = await api('GET', '/library'); } catch (ex) { libBox.replaceChildren(); toast(ex.message, 'bad'); return; }
+      if (!data.configured) { libBox.replaceChildren(h('p', { class: 'muted' }, 'Pasta de jogos não configurada. Defina ROMS_DIR no arquivo .env (ex.: ROMS_DIR=G:\Meu Drive\Jogos) e reinicie o servidor.')); return; }
+      if (!data.reachable) { libBox.replaceChildren(h('p', { class: 'muted' }, 'Não consegui abrir a pasta configurada em ROMS_DIR. Confira o caminho e se o Google Drive está aberto.')); return; }
+      const list = h('div', { class: 'lib-list', role: 'listbox', 'aria-label': 'Arquivos da pasta de jogos' });
+      const q = input({ placeholder: 'Filtrar por nome…', 'aria-label': 'Filtrar arquivos', oninput: () => paint() });
+      const paint = () => {
+        const needle = q.value.toLowerCase().trim();
+        const rows = data.files.filter((f) => !needle || f.path.toLowerCase().includes(needle)).slice(0, 80);
+        list.replaceChildren(...(rows.length ? rows.map((f) => h('button', { class: 'btn lib-item', type: 'button', role: 'option', onclick: () => {
+          Object.assign(g.rom, { kind: 'file', url: f.url, size: f.size, sha256: '' }); romPath.value = f.url; paintRom(); libBox.replaceChildren(); toast('Arquivo selecionado.');
+        } }, h('span', {}, f.path), h('small', {}, fmtBytes(f.size)))) : [h('p', { class: 'muted' }, 'Nenhum arquivo de jogo encontrado.')]));
+      };
+      libBox.replaceChildren(h('p', { class: 'hint' }, `${data.files.length} arquivo(s) em "${data.dir}"${data.truncated ? ' (lista cortada)' : ''}.`), q, list);
+      paint();
+    };
+    const romPath = input({ id: 'romurl', placeholder: '/roms/arquivo.gba, /library/… ou https://…', value: g.rom.url, oninput: () => { g.rom.url = romPath.value.trim(); g.rom.size = 0; g.rom.sha256 = ''; paintRom(); } });
     const romBox = h('div');
     const kindSeg = h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Tipo de arquivo' }, [['file', 'ROM / ISO'], ['web', 'Jogo web (HTML5)'], ['none', 'Nenhum']].map(([v, l]) => h('label', {}, h('input', {
       type: 'radio', name: 'kind', value: v, checked: g.rom.kind === v,
@@ -420,7 +440,7 @@
       },
     }), h('span', {}, l))));
     const paintKind = () => {
-      if (g.rom.kind === 'file') romBox.replaceChildren(h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => romFile.click() }, ico('upload'), 'Enviar arquivo'), romFile), progress, romInfo,
+      if (g.rom.kind === 'file') romBox.replaceChildren(h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => romFile.click() }, ico('upload'), 'Enviar arquivo'), h('button', { class: 'btn', type: 'button', onclick: openLibrary }, 'Escolher da pasta de jogos'), romFile), libBox, progress, romInfo,
         field('Ou informe um caminho já existente no servidor', romPath, { hint: 'Ex.: /roms/jogo.gba (pasta public/roms). Arquivos enviados ficam em /uploads/roms.', errKey: 'rom' }));
       else if (g.rom.kind === 'web') romBox.replaceChildren(field('URL do jogo web', romPath, { hint: 'Caminho local iniciando em /web/ ou um endereço https:// (será aberto em um iframe com sandbox).', errKey: 'rom' }));
       else romBox.replaceChildren(h('p', { class: 'muted' }, 'Sem arquivo, o jogo só pode ficar como rascunho.'));

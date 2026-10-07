@@ -10,7 +10,7 @@ self.addEventListener('activate', (e) => {
   })());
 });
 
-const SKIP = /^\/(emu|roms|uploads|api|admin|jogar|emulador|og)(\/|$)/;
+const SKIP = /^\/(emu|roms|library|uploads|api|admin|jogar|emulador|og)(\/|$)/;
 const STATIC = /^\/(css|js|fonts|img|covers)\//;
 
 self.addEventListener('fetch', (e) => {

@@ -1,9 +1,10 @@
 import { existsSync } from 'node:fs';
+import { libraryRelFromUrl, resolveLibraryFile } from '../library.js';
 import { join } from 'node:path';
 import express from 'express';
 import { config } from '../config.js';
 import {
-  getGameBySlug, getSettings, listSystems, publishedGames, recordPlay, recordTier, recordView,
+  getGameBySlug, getSettings, listGames, listSystems, publishedGames, recordPlay, recordTier, recordView,
 } from '../db.js';
 import { atomFeed, llmsFullTxt, llmsTxt, robotsTxt, siteOrigin, sitemapXml } from '../seo.js';
 import { rateLimit, setPageHeaders } from '../security.js';
@@ -110,6 +111,17 @@ export function createPublicRouter() {
     const { main, jsonld } = systemPage(ctx, s);
     view(req);
     send(res, ctx, { title: pageTitle(s.title, ctx.settings.siteName), description: s.description, path: `/consoles/${s.slug}`, main, jsonld, imageAlt: s.title });
+  });
+
+  /* jogos da pasta local (ROMS_DIR): só serve o que está vinculado a um jogo publicado */
+  r.get(/^\/library\/.+/, (req, res, next) => {
+    let wanted;
+    try { wanted = decodeURIComponent(req.path.slice('/library/'.length)); } catch { return next(); }
+    const linked = listGames().some((g) => g.status === 'published' && g.rom.kind === 'file' && libraryRelFromUrl(g.rom.url) === wanted);
+    const file = linked && resolveLibraryFile(wanted);
+    if (!file) return next();
+    res.set({ 'Cross-Origin-Resource-Policy': 'same-origin', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'no-cache', 'Accept-Ranges': 'bytes' });
+    res.sendFile(file, { dotfiles: 'deny', cacheControl: false }, (err) => { if (err && !res.headersSent) next(); });
   });
 
   /* player: páginas isoladas (COOP/COEP) para SharedArrayBuffer/threads */
