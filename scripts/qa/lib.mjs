@@ -22,7 +22,7 @@ export async function launch(opts = {}) {
     headless: true,
     defaultViewport: opts.viewport || { width: 1280, height: 720 },
     args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required', '--ignore-gpu-blocklist',
-      '--enable-unsafe-swiftshader', '--disable-renderer-backgrounding', '--disable-background-timer-throttling',
+      ...(opts.gpu ? ['--use-angle=d3d11', '--enable-gpu-rasterization'] : ['--enable-unsafe-swiftshader']), '--disable-renderer-backgrounding', '--disable-background-timer-throttling',
       '--disable-backgrounding-occluded-windows', ...(opts.args || [])],
   });
 }
