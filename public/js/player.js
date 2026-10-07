@@ -241,6 +241,30 @@
     addEventListener('message', onMsg);
   }
 
+  /** Baixa um arquivo grande em partes, mostrando o andamento, e devolve um File. */
+  async function downloadAsFile(url, title) {
+    const res = await fetch(url);
+    if (!res.ok || !res.body) throw new Error('HTTP ' + res.status);
+    const total = Number(res.headers.get('content-length')) || 0;
+    const reader = res.body.getReader();
+    const parts = [];
+    let got = 0;
+    let last = 0;
+    warn.hidden = false;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parts.push(value);
+      got += value.length;
+      if (performance.now() - last > 250) {
+        last = performance.now();
+        warn.textContent = total ? `Baixando o jogo… ${Math.round((got / total) * 100)}% (${(got / 1073741824).toFixed(2)} de ${(total / 1073741824).toFixed(2)} GB)` : `Baixando o jogo… ${(got / 1073741824).toFixed(2)} GB`;
+      }
+    }
+    const name = decodeURIComponent(new URL(url, location.origin).pathname.split('/').pop() || '') || title + '.iso';
+    return new File(parts, name, { type: 'application/octet-stream' });
+  }
+
   function start() {
     if (!system) return;
     if (!checkDevice() && system.core === 'psp') return;
@@ -260,8 +284,16 @@
       return;
     }
     if (system.engine === 'play') {
-      if (!file) { GW.toast?.('Escolha o arquivo do seu jogo de PS2.'); playBtn.disabled = false; progress.hidden = true; return; }
-      startPlay(file);
+      if (file) startPlay(file);
+      else if (data.game?.url) {
+        // jogo do catálogo: o Play! recebe um arquivo, então baixamos o ISO (com progresso) antes de iniciar
+        downloadAsFile(data.game.url, data.game.title).then((f) => { warn.hidden = true; startPlay(f); hideGate(); }).catch((err) => {
+          console.warn('Falha ao baixar o jogo', err);
+          warn.hidden = false; warn.textContent = 'Não foi possível baixar o jogo. Verifique a conexão e tente de novo.';
+          playBtn.disabled = false; progress.hidden = true;
+        });
+        return;
+      } else { GW.toast?.('Escolha o arquivo do seu jogo de PS2.'); playBtn.disabled = false; progress.hidden = true; return; }
     } else if (data.mode === 'byo') {
       startEJS(file, file.name);
     } else {
